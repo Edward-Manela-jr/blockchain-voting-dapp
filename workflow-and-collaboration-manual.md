@@ -231,3 +231,282 @@ git config user.email "your.email@example.com"
 | `hotfix/*` | Emergency fixes | Maintainers |
 
 Remember: **When in doubt, ask!** Communication is key to successful collaboration.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+🧱 STEP 3 — Create deploy.js
+
+Inside voting-contract/scripts/ create file:
+
+deploy.js
+
+Paste this:
+
+async function main() {
+  const Voting = await ethers.getContractFactory("Voting");
+
+  const voting = await Voting.deploy();
+
+  await voting.waitForDeployment();
+
+  console.log("Voting deployed to:", await voting.getAddress());
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+
+Save.
+
+✅ STEP 4 — Make Sure Blockchain Is Running
+
+Terminal 1:
+
+npx hardhat node
+
+Leave it running.
+
+✅ STEP 5 — Deploy Contract (Correct Way)
+
+Open NEW terminal.
+
+Go again:
+
+cd ~/School/cryptography_and_applications/app/voting-contract
+
+Now run:
+
+npx hardhat run scripts/deploy.js --network localhost
+
+You should see:
+
+Voting deployed to: 0x.....
+
+🎉 SUCCESS.
+
+🧠 Why This Confusion Happened
+
+You actually have two different apps:
+
+Folder	Role
+voting-contract	Blockchain backend
+react app	Website frontend
+
+Hardhat commands ONLY work inside:
+
+👉 voting-contract
+
+🧭 Mental Map (SUPER IMPORTANT)
+
+Think:
+
+React = Website
+Hardhat = Blockchain Server
+MetaMask = User Wallet
+Smart Contract = Voting Rules
+
+Each lives in its own folder.
+
+⚠️ VERY IMPORTANT RULE
+
+Never run Hardhat commands from:
+
+app/
+react-app/
+
+Only from:
+
+voting-contract/
+Tell me next:
+
+👉 After cd voting-contract, what does ls show?
+
+We’ll verify your project structure before moving forward.
+
+edward-manela-jr@edward-manela-jr-MacBookPro11-1:~/School/cryptography_and_applications/app/voting-contract$ npx hardhat run scripts/deploy.js --network localhost
+Voting deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+edward-manela-jr@edward-manela-jr-MacBookPro11-1:~/School/cryptography_and_applications/app/voting-contract$ 
+
+🔥 YESSS — this is a major milestone.
+
+You have officially:
+
+✅ compiled a smart contract
+✅ started a local blockchain
+✅ deployed a contract
+✅ received a contract address
+
+You are now actually running a blockchain application.
+
+Let’s slow down and understand what just happened (this part is VERY important).
+
+🧠 What You Just Did (In Human Language)
+
+You ran:
+
+npx hardhat run scripts/deploy.js --network localhost
+
+This means:
+
+👉 “Take my voting rules and publish them onto my blockchain.”
+
+
+
+
+
+
+🧱 STEP 3 — Create deploy.js
+
+Inside voting-contract/scripts/ create file:
+
+deploy.js
+
+Paste this:
+
+async function main() {
+  const Voting = await ethers.getContractFactory("Voting");
+
+  const voting = await Voting.deploy();
+
+  await voting.waitForDeployment();
+
+  console.log("Voting deployed to:", await voting.getAddress());
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+
+Save.
+
+✅ STEP 4 — Make Sure Blockchain Is Running
+
+Terminal 1:
+
+npx hardhat node
+
+Leave it running.
+
+✅ STEP 5 — Deploy Contract (Correct Way)
+
+Open NEW terminal.
+
+Go again:
+
+cd ~/School/cryptography_and_applications/app/voting-contract
+
+Now run:
+
+npx hardhat run scripts/deploy.js --network localhost
+
+You should see:
+
+Voting deployed to: 0x.....
+
+🎉 SUCCESS.
+
+🧠 Why This Confusion Happened
+
+You actually have two different apps:
+
+Folder	Role
+voting-contract	Blockchain backend
+react app	Website frontend
+
+Hardhat commands ONLY work inside:
+
+👉 voting-contract
+
+🧭 Mental Map (SUPER IMPORTANT)
+
+Think:
+
+React = Website
+Hardhat = Blockchain Server
+MetaMask = User Wallet
+Smart Contract = Voting Rules
+
+Each lives in its own folder.
+
+⚠️ VERY IMPORTANT RULE
+
+Never run Hardhat commands from:
+
+app/
+react-app/
+
+Only from:
+
+voting-contract/
+Tell me next:
+
+👉 After cd voting-contract, what does ls show?
+
+We’ll verify your project structure before moving forward.
+
+edward-manela-jr@edward-manela-jr-MacBookPro11-1:~/School/cryptography_and_applications/app/voting-contract$ npx hardhat run scripts/deploy.js --network localhost
+Voting deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+edward-manela-jr@edward-manela-jr-MacBookPro11-1:~/School/cryptography_and_applications/app/voting-contract$ 
+
+🔥 YESSS — this is a major milestone.
+
+You have officially:
+
+✅ compiled a smart contract
+✅ started a local blockchain
+✅ deployed a contract
+✅ received a contract address
+
+You are now actually running a blockchain application.
+
+Let’s slow down and understand what just happened (this part is VERY important).
+
+🧠 What You Just Did (In Human Language)
+
+You ran:
+
+npx hardhat run scripts/deploy.js --network localhost
+
+This means:
+
+👉 “Take my voting rules and publish them onto my blockchain.”
