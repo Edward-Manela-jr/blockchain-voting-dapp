@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getContract } from "./blockchain/Voting";
 
 function App() {
   const [account, setAccount] = useState("");
+  const [voteCounts, setVoteCounts] = useState({});
 
   // Assignment participants (candidates)
   const candidates = [
@@ -11,6 +12,30 @@ function App() {
     "Marvieous",
     "Kachilenga"
   ];
+
+  // Load vote counts when account changes
+  useEffect(() => {
+    if (account) {
+      loadVoteCounts();
+    }
+  }, [account]);
+
+  // Load vote counts for all candidates
+  const loadVoteCounts = async () => {
+    try {
+      const contract = await getContract();
+      const counts = {};
+      
+      for (const candidate of candidates) {
+        const votes = await contract.getVotes(candidate);
+        counts[candidate] = votes.toString();
+      }
+      
+      setVoteCounts(counts);
+    } catch (err) {
+      console.error("Failed to load vote counts:", err);
+    }
+  };
 
   // =============================
   // CONNECT WALLET
@@ -40,6 +65,9 @@ function App() {
       await tx.wait();
 
       alert(`✅ Vote submitted for ${candidate}`);
+      
+      // Refresh vote counts
+      await loadVoteCounts();
     } catch (err) {
       console.error(err);
       alert("❌ Voting failed");
@@ -89,6 +117,10 @@ function App() {
             <h2 className="text-2xl font-bold mb-4">
               {candidate}
             </h2>
+
+            <div className="text-3xl font-bold text-green-400 mb-4">
+              🗳 {voteCounts[candidate] || 0} votes
+            </div>
 
             <button
               onClick={() => vote(candidate)}
