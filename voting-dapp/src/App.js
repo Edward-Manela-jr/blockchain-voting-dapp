@@ -4,6 +4,7 @@ import { getContract } from "./blockchain/Voting";
 function App() {
   const [account, setAccount] = useState("");
   const [voteCounts, setVoteCounts] = useState({});
+  const [hasVoted, setHasVoted] = useState(false);
 
   // Assignment participants (candidates)
   const candidates = [
@@ -13,12 +14,24 @@ function App() {
     "Kachilenga"
   ];
 
-  // Load vote counts when account changes
+  // Load vote counts and voting status when account changes
   useEffect(() => {
     if (account) {
       loadVoteCounts();
+      checkVotingStatus();
     }
   }, [account]);
+
+  // Check if current user has already voted
+  const checkVotingStatus = async () => {
+    try {
+      const contract = await getContract();
+      const voted = await contract.hasVotedCheck();
+      setHasVoted(voted);
+    } catch (err) {
+      console.error("Failed to check voting status:", err);
+    }
+  };
 
   // Load vote counts for all candidates
   const loadVoteCounts = async () => {
@@ -66,11 +79,16 @@ function App() {
 
       alert(`✅ Vote submitted for ${candidate}`);
       
-      // Refresh vote counts
+      // Refresh vote counts and voting status
       await loadVoteCounts();
+      await checkVotingStatus();
     } catch (err) {
       console.error(err);
-      alert("❌ Voting failed");
+      if (err.message.includes("already voted")) {
+        alert("❌ You have already voted!");
+      } else {
+        alert("❌ Voting failed");
+      }
     }
   };
 
@@ -99,9 +117,14 @@ function App() {
             <p className="text-green-400 mb-2">
               Wallet Connected ✅
             </p>
-            <p className="text-sm break-all font-mono">
+            <p className="text-sm break-all font-mono mb-2">
               {account}
             </p>
+            {hasVoted && (
+              <p className="text-yellow-400 text-sm">
+                🗳 You have already voted
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -124,14 +147,14 @@ function App() {
 
             <button
               onClick={() => vote(candidate)}
-              disabled={!account}
+              disabled={!account || hasVoted}
               className={`w-full py-3 rounded-lg font-semibold transition ${
-                account
+                account && !hasVoted
                   ? "bg-green-600 hover:bg-green-700"
                   : "bg-gray-600 text-gray-400 cursor-not-allowed"
               }`}
             >
-              Vote
+              {hasVoted ? "Already Voted" : "Vote"}
             </button>
           </div>
         ))}

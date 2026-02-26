@@ -88,3 +88,38 @@ Frontend → "Vote for Edward" → MetaMask → "Pay 0.001 ETH gas?" → You →
 ```
 
 **Bottom Line**: Your wallet is your digital signature. MetaMask is your secure middleman that ensures only you can approve actions on your behalf.
+
+## Voting Security Fix
+
+### Problem Fixed
+- **Multiple Votes Per Person**: Users could vote for all 4 candidates
+- **No Vote Tracking**: No mechanism to prevent double voting
+- **Security Flaw**: Anyone could cast unlimited votes
+
+### Solution Added
+- **One Vote Per Wallet**: Added `mapping(address => bool) public hasVoted` to contract
+- **Voting Status Check**: Added `hasVotedCheck()` function to verify if wallet already voted
+- **Frontend Protection**: Disabled voting buttons for users who already voted
+- **Error Handling**: Clear "You have already voted!" messages
+
+### Files Changed for Security
+1. **`voting-contract/contracts/Voting.sol`**:
+   - Added `hasVoted` mapping to track voter status
+   - Added `require(!hasVoted[msg.sender])` in vote function
+   - Added `hasVotedCheck()` function
+
+2. **`voting-dapp/src/blockchain/Voting.js`**:
+   - Updated contract address to: `0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9`
+   - Added `hasVotedCheck` to ABI
+
+3. **`voting-dapp/src/App.js`**:
+   - Added `hasVoted` state tracking
+   - Added `checkVotingStatus()` function
+   - Updated UI to show "Already Voted" status
+   - Disabled vote buttons after voting
+
+### New Voting Behavior
+- ✅ First vote: Success
+- ✅ Second vote attempt: "You have already voted!" error
+- ✅ All vote buttons disabled after voting
+- ✅ Clear visual feedback for voting status
