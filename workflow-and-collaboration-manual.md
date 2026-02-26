@@ -510,3 +510,16 @@ npx hardhat run scripts/deploy.js --network localhost
 This means:
 
 👉 “Take my voting rules and publish them onto my blockchain.”
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,32 +1,45 @@
-// import Home from "./pages/Home";
-// // import Navbar from "./components/Navbar";
-
-// function App() {
-//   return (
-//     <div>
-//       {/* <Navbar /> */}
-//       <Home />
-//     </div>
-//   );
-// }
-
-// export default App;
-
-
-
-
-
-
-
-
-
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getContract } from "./blockchain/Voting";
 
 function App() {
   const [account, setAccount] = useState("");
+  const [voteCounts, setVoteCounts] = useState({});
 
+  // Assignment participants (candidates)
+  const candidates = [
+    "Edward",
+    "Silina",
+    "Marvieous",
+    "Kachilenga"
+  ];
+
+  // Load vote counts when account changes
+  useEffect(() => {
+    if (account) {
+      loadVoteCounts();
+    }
+  }, [account]);
+
+  // Load vote counts for all candidates
+  const loadVoteCounts = async () => {
+    try {
+      const contract = await getContract();
+      const counts = {};
+      
+      for (const candidate of candidates) {
+        const votes = await contract.getVotes(candidate);
+        counts[candidate] = votes.toString();
+      }
+      
+      setVoteCounts(counts);
+    } catch (err) {
+      console.error("Failed to load vote counts:", err);
+    }
+  };
+
+  // =============================
+  // CONNECT WALLET
+  // =============================
   const connectWallet = async () => {
     if (!window.ethereum) {
       alert("Install MetaMask");
@@ -40,26 +53,40 @@ function App() {
     setAccount(accounts[0]);
   };
 
-  const vote = async () => {
-    const contract = await getContract();
+  // =============================
+  // VOTE FUNCTION
+  // =============================
+  const vote = async (candidate) => {
+    try {
+      const contract = await getContract();
 
-    const tx = await contract.vote("Edward"); // vote for candidate 0
+      const tx = await contract.vote(candidate);
 
-    await tx.wait();
+      await tx.wait();
 
-    alert("Vote submitted!");
+      alert(`✅ Vote submitted for ${candidate}`);
+      
+      // Refresh vote counts
+      await loadVoteCounts();
+    } catch (err) {
+      console.error(err);
+      alert("❌ Voting failed");
+    }
   };
 
+  // =============================
+  // UI
+  // =============================
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-black text-white flex flex-col items-center justify-center p-4">
-      
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-black text-white flex flex-col items-center p-6">
+
       {/* TITLE */}
       <h1 className="text-4xl font-bold mb-10 text-center">
         🗳 Blockchain Voting System
       </h1>
 
       {/* WALLET CARD */}
-      <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md text-center mb-8">
+      <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md text-center mb-10">
         {!account ? (
           <button
             onClick={connectWallet}
@@ -69,26 +96,46 @@ function App() {
           </button>
         ) : (
           <div>
-            <p className="text-green-400 mb-2">Wallet Connected ✅</p>
-            <p className="text-sm break-all font-mono">{account}</p>
+            <p className="text-green-400 mb-2">
+              Wallet Connected ✅
+            </p>
+            <p className="text-sm break-all font-mono">
+              {account}
+            </p>
           </div>
         )}
       </div>
 
-      {/* VOTING CARD */}
-      <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md text-center">
-        <h2 className="text-xl font-semibold mb-4">Cast Your Vote</h2>
-        <button 
-          onClick={vote} 
-          disabled={!account}
-          className={`w-full font-semibold py-3 px-4 rounded-lg transition ${
-            account 
-              ? "bg-green-600 hover:bg-green-700 text-white cursor-pointer" 
-              : "bg-gray-600 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          Vote for Candidate 1
-        </button>
+      {/* CANDIDATES GRID */}
+      <div className="grid md:grid-cols-2 gap-6 w-full max-w-4xl">
+
+        {candidates.map((candidate) => (
+          <div
+            key={candidate}
+            className="bg-slate-800 p-6 rounded-2xl shadow-xl text-center hover:scale-105 transition"
+          >
+            <h2 className="text-2xl font-bold mb-4">
+              {candidate}
+            </h2>
+
+            <div className="text-3xl font-bold text-green-400 mb-4">
+              🗳 {voteCounts[candidate] || 0} votes
+            </div>
+
+            <button
+              onClick={() => vote(candidate)}
+              disabled={!account}
+              className={`w-full py-3 rounded-lg font-semibold transition ${
+                account
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Vote
+            </button>
+          </div>
+        ))}
+
       </div>
 
     </div>
