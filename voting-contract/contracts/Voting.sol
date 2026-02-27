@@ -5,12 +5,16 @@ contract Voting {
     
     mapping(string => uint) public candidateVotes;
     string[] public candidates;
+    mapping(address => bool) public hasVoted;
     
     function vote(string memory _candidate) public {
+        require(!hasVoted[msg.sender], "You have already voted!");
+        
         if (candidateVotes[_candidate] == 0) {
             candidates.push(_candidate);
         }
         candidateVotes[_candidate] += 1;
+        hasVoted[msg.sender] = true;
     }
     
     function getVotes(string memory _candidate) public view returns (uint) {
@@ -27,5 +31,9 @@ contract Voting {
             votes[i] = candidateVotes[_candidates[i]];
         }
         return votes;
+    }
+    
+    function hasVotedCheck() public view returns (bool) {
+        return hasVoted[msg.sender];
     }
 }

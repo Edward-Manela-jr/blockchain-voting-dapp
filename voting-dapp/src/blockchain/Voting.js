@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 
 const contractAddress =
-  "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6";
+  "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const abi = [
     {
@@ -76,6 +76,19 @@ const abi = [
           "internalType": "string[]",
           "name": "",
           "type": "string[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "hasVotedCheck",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
