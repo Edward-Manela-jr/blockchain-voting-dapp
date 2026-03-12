@@ -1,0 +1,94 @@
+Ethereum, Smart Contracts, and Cryptography Explained
+
+1. What is Ethereum?
+
+Ethereum is a decentralized blockchain platform that allows developers
+to build and run smart contracts and decentralized applications (DApps).
+
+Key Characteristics: - No central authority controls it. - Runs on
+thousands of computers worldwide. - Acts like a global shared
+computer. - Uses cryptography to secure transactions and programs.
+
+Bitcoin focuses mainly on digital money, while Ethereum allows
+programmable applications.
+
+------------------------------------------------------------------------
+
+2. Smart Contracts
+
+A smart contract is a program stored on a blockchain that automatically
+executes when predefined conditions are met.
+
+Features: - Stored permanently on the blockchain - Cannot easily be
+altered - Executes automatically without intermediaries
+
+Smart contracts are commonly written in Solidity using .sol files.
+
+Example filename: MyContract.sol
+
+------------------------------------------------------------------------
+
+3. Solidity (.sol Files)
+
+Solidity is the programming language used to write smart contracts on
+Ethereum.
+
+Example Solidity Contract:
+
+    pragma solidity ^0.8.0;
+
+    contract MyContract {
+        uint public number;
+
+        function setNumber(uint _num) public {
+            number = _num;
+        }
+    }
+
+------------------------------------------------------------------------
+
+4. How Cryptography Secures Ethereum
+
+a)  Hash Functions Ethereum uses cryptographic hashing (Keccak-256) to:
+
+-   Secure blocks
+-   Create transaction identifiers
+-   Link blocks together
+
+A hash converts data into a fixed-length fingerprint. Even a small
+change produces a completely different hash.
+
+b)  Public and Private Keys Each user has:
+
+-   Private Key: Secret key used to approve transactions.
+-   Public Address: Shared address used to receive transactions.
+
+Transactions are signed using the private key.
+
+c)  Digital Signatures Ethereum uses Elliptic Curve Digital Signature
+    Algorithm (ECDSA) to:
+
+-   Verify ownership
+-   Prevent forgery
+-   Authenticate transactions
+
+d)  Immutability Blocks are cryptographically linked. Changing past data
+    breaks the chain, making tampering extremely difficult.
+
+------------------------------------------------------------------------
+
+5. Gas Fees
+
+Running smart contracts requires Gas. Gas: - Measures computational
+effort. - Prevents spam attacks. - Pays network validators.
+
+Gas is paid using Ether (ETH), Ethereum’s cryptocurrency.
+
+------------------------------------------------------------------------
+
+6. Summary
+
+-   Ethereum is a decentralized programmable blockchain.
+-   Smart contracts are blockchain programs.
+-   Solidity (.sol) is used to write contracts.
+-   Cryptography provides hashing, signatures, ownership, and security.
