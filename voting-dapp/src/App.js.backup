@@ -106,36 +106,6 @@ function App() {
     }
   };
 
-  // ================================
-  // VERIFY DOCUMENT FUNCTION
-  // ================================
-  const verifyDocument = async (hash) => {
-    try {
-      const contract = await getContract();
-      const tx = await contract.verifyDocument(hash);
-      await tx.wait();
-      alert("Document verified on blockchain!");
-    } catch (err) {
-      console.error("Failed to verify document:", err);
-      alert("Failed to verify document: " + err.message);
-    }
-  };
-
-  // ================================
-  // CHECK DOCUMENT FUNCTION
-  // ================================
-  const checkDocument = async (hash) => {
-    try {
-      const contract = await getContract();
-      const result = await contract.getDocument(hash);
-      console.log("Document Details:", result);
-      alert(`Document Info:\nOwner: ${result.owner}\nVerified: ${result.verified}`);
-    } catch (err) {
-      console.error("Failed to get document:", err);
-      alert("Document not found or error occurred.");
-    }
-  };
-
   // =============================
   // VOTE FUNCTION
   // =============================
@@ -284,18 +254,6 @@ function App() {
         >
           {account ? "📝 Register Document" : "🔐 Connect Wallet First"}
         </button>
-
-        <button
-          onClick={() => registerDocument("HASH123")}
-          disabled={!account}
-          className={`w-full py-2 rounded-lg font-medium transition mt-4 ${
-            account
-              ? "bg-purple-600 hover:bg-purple-700 text-white"
-              : "bg-gray-600 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          🧪 Test Register "HASH123"
-        </button>
       </div>
 
       {/* DOCUMENT VERIFICATION SECTION */}
@@ -330,18 +288,6 @@ function App() {
           }`}
         >
           {account ? "✅ Verify Document" : "🔐 Connect Wallet First"}
-        </button>
-
-        <button
-          onClick={() => checkDocument("HASH123")}
-          disabled={!account}
-          className={`w-full py-2 rounded-lg font-medium transition mt-4 ${
-            account
-              ? "bg-orange-600 hover:bg-orange-700 text-white"
-              : "bg-gray-600 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          🔍 Test Check "HASH123"
         </button>
       </div>
 
