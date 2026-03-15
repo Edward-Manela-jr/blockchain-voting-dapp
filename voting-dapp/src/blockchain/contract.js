@@ -5,61 +5,37 @@ import { ethers } from "ethers";
  * This file acts as the bridge between the React frontend and the deployed Smart Contract.
  */
 
-// The address where the DocumentVerification contract is deployed on the local blockchain
-export const CONTRACT_ADDRESS = "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
+// The address where the Voting contract is deployed on the local blockchain
+export const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 // The Application Binary Interface (ABI) tells Ethers.js how to talk to the contract functions
 export const CONTRACT_ABI = [
   {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_hash",
-        "type": "string"
-      }
-    ],
-    "name": "registerDocument",
-    "outputs": [],
+    "inputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
+    "type": "constructor"
   },
   {
     "inputs": [
       {
         "internalType": "string",
-        "name": "_hash",
+        "name": "_name",
         "type": "string"
       }
     ],
-    "name": "verifyDocument",
+    "name": "addCandidate",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_hash",
-        "type": "string"
-      }
-    ],
-    "name": "getDocument",
+    "inputs": [],
+    "name": "admin",
     "outputs": [
       {
         "internalType": "address",
-        "name": "owner",
+        "name": "",
         "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timestamp",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "verified",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -68,45 +44,129 @@ export const CONTRACT_ABI = [
   {
     "inputs": [
       {
-        "indexed": true,
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "candidates",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
         "internalType": "string",
-        "name": "hash",
+        "name": "name",
         "type": "string"
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "owner",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "voteCount",
+        "type": "uint256"
       }
     ],
-    "name": "DocumentRegistered",
-    "type": "event"
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "candidatesCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "electionActive",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "endElection",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "string",
-        "name": "hash",
-        "type": "string"
-      },
+        "internalType": "uint256",
+        "name": "_candidateId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getVotes",
+    "outputs": [
       {
-        "indexed": true,
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "startElection",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_candidateId",
+        "type": "uint256"
+      }
+    ],
+    "name": "vote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
-        "name": "verifier",
+        "name": "",
         "type": "address"
       }
     ],
-    "name": "DocumentVerified",
-    "type": "event"
+    "name": "voters",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ];
 
 /**
  * getContract
  * Purpose: Initializes the Ethers.js provider and signer to interact with the blockchain.
- * Relation: Used by App.js to get a 'contract instance' before calling register/verify/getDocument.
+ * Relation: Used by App.js to get a 'contract instance' before calling vote/getVotes functions.
  */
 export const getContract = async () => {
 
