@@ -32,6 +32,13 @@ contract Voting {
     function addCandidate(string memory _name) public onlyAdmin {
         require(!electionActive, "Cannot add candidates after election starts");
         
+        // Check for duplicate candidate names
+        for(uint i = 1; i <= candidatesCount; i++) {
+            if(keccak256(bytes(candidates[i].name)) == keccak256(bytes(_name))) {
+                revert("Candidate already exists");
+            }
+        }
+        
         candidatesCount++;
         candidates[candidatesCount] = Candidate(candidatesCount, _name, 0);
     }
