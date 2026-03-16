@@ -39,7 +39,7 @@ function App() {
   const checkVotingStatus = async () => {
     try {
       const contract = await getContract();
-      const voted = await contract.hasVotedCheck();
+      const voted = await contract.voters(account);
       setHasVoted(voted);
     } catch (err) {
       console.error("Failed to check voting status:", err);
@@ -55,15 +55,18 @@ function App() {
       let leader = "";
       let maxVotes = 0;
       
-      for (const candidate of candidates) {
-        const votes = await contract.getVotes(candidate);
-        const voteNum = parseInt(votes.toString());
-        counts[candidate] = voteNum;
+      // Get candidatesCount first to know how many candidates exist
+      const candidatesCount = await contract.candidatesCount();
+      
+      for (let i = 1; i <= candidatesCount; i++) {
+        const candidateData = await contract.candidates(i);
+        const voteNum = parseInt(candidateData.voteCount.toString());
+        counts[candidateData.name] = voteNum;
         total += voteNum;
         
         if (voteNum > maxVotes) {
           maxVotes = voteNum;
-          leader = candidate;
+          leader = candidateData.name;
         }
       }
       
@@ -92,72 +95,95 @@ function App() {
   };
 
   // ================================
-  // REGISTER DOCUMENT FUNCTION
+  // START ELECTION FUNCTION
   // ================================
-  const registerDocument = async (hash) => {
+  const startElection = async () => {
     try {
       const contract = await getContract();
-      const tx = await contract.registerDocument(hash);
+      const tx = await contract.startElection();
       await tx.wait();
-      alert("Document registered on blockchain!");
+      alert("✅ Election started!");
     } catch (err) {
-      console.error("Failed to register document:", err);
-      alert("Failed to register document: " + err.message);
+      console.error("Failed to start election:", err);
+      alert("Failed to start election: " + err.message);
     }
   };
 
   // ================================
-  // VERIFY DOCUMENT FUNCTION
+  // ADD CANDIDATE FUNCTION
   // ================================
-  const verifyDocument = async (hash) => {
+  const addCandidate = async (name) => {
     try {
       const contract = await getContract();
-      const tx = await contract.verifyDocument(hash);
+      const tx = await contract.addCandidate(name);
       await tx.wait();
-      alert("Document verified on blockchain!");
+      alert("Candidate added: " + name);
     } catch (err) {
-      console.error("Failed to verify document:", err);
-      alert("Failed to verify document: " + err.message);
+      console.error("Failed to add candidate:", err);
+      alert("Failed to add candidate: " + err.message);
     }
   };
 
+
   // ================================
-  // CHECK DOCUMENT FUNCTION
+  // END ELECTION FUNCTION
   // ================================
-  const checkDocument = async (hash) => {
+  const endElection = async () => {
     try {
       const contract = await getContract();
-      const result = await contract.getDocument(hash);
-      console.log("Document Details:", result);
-      alert(`Document Info:\nOwner: ${result.owner}\nVerified: ${result.verified}`);
+      const tx = await contract.endElection();
+      await tx.wait();
+      alert("🛑 Election ended!");
     } catch (err) {
-      console.error("Failed to get document:", err);
-      alert("Document not found or error occurred.");
+      console.error("Failed to end election:", err);
+      alert("Failed to end election: " + err.message);
+    }
+  };
+
+  // =============================
+  // GET VOTES FUNCTION
+  // =============================
+  const getVotes = async (candidateId) => {
+    try {
+      const contract = await getContract();
+      const votes = await contract.getVotes(candidateId);
+      console.log("Votes:", votes.toString());
+      alert(`Candidate ${candidateId} has ${votes.toString()} votes`);
+    } catch (err) {
+      console.error("Failed to get votes:", err);
+      alert("Failed to get votes: " + err.message);
     }
   };
 
   // =============================
   // VOTE FUNCTION
   // =============================
-  const vote = async (candidate) => {
+  const vote = async (candidateId) => {
+    if (!account) {
+      alert("Please connect your wallet first.");
+      return;
+    }
+    if (hasVoted) {
+      alert("You have already voted!");
+      return;
+    }
+
     try {
       const contract = await getContract();
-
-      const tx = await contract.vote(candidate);
-
+      const tx = await contract.vote(candidateId);
       await tx.wait();
-
-      alert(`✅ Vote submitted for ${candidate}`);
-      
-      // Refresh vote counts and voting status
-      await loadVoteCounts();
-      await checkVotingStatus();
+      alert("Vote recorded!");
+      loadVoteCounts();
+      setHasVoted(true);
     } catch (err) {
-      console.error(err);
+      console.error("Voting failed:", err);
       if (err.message.includes("already voted")) {
-        alert("❌ You have already voted!");
+        alert("You have already voted!");
+        setHasVoted(true);
+      } else if (err.message.includes("Election is not active")) {
+        alert("Election is not active!");
       } else {
-        alert("❌ Voting failed");
+        alert("Failed to cast vote. See console for details.");
       }
     }
   };
@@ -172,6 +198,140 @@ function App() {
       <h1 className="text-4xl font-bold mb-10 text-center">
         🗳 Blockchain Voting System
       </h1>
+
+      {/* ADMIN PANEL */}
+      {account && (
+        <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
+          <h2 className="text-2xl font-bold mb-4 text-center">👑 Admin Panel</h2>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <button 
+              onClick={startElection}
+              className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg font-semibold transition"
+            >
+              🚀 Start Election
+            </button>
+            <button 
+              onClick={endElection}
+              className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg font-semibold transition"
+            >
+              🛑 End Election
+            </button>
+            <button 
+              onClick={() => addCandidate("Edward")}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition"
+            >
+              Add Edward
+            </button>
+            <button 
+              onClick={() => addCandidate("Silina")}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition"
+            >
+              Add Silina
+            </button>
+            <button 
+              onClick={() => addCandidate("Marvieous")}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition"
+            >
+              Add Marvieous
+            </button>
+            <button 
+              onClick={() => addCandidate("Kachilenga")}
+              className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition"
+            >
+              Add Kachilenga
+            </button>
+          </div>
+          <p className="text-center text-sm text-gray-400 mt-3">
+            ⚠️ Only the admin wallet can add candidates
+          </p>
+        </div>
+      )}
+
+      {/* VOTING SECTION */}
+      {account && (
+        <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
+          <h2 className="text-2xl font-bold mb-4 text-center">🗳 Cast Your Vote</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button 
+              onClick={() => vote(1)}
+              disabled={!account || hasVoted}
+              className={`py-3 rounded-lg font-semibold transition ${
+                account && !hasVoted
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Vote for Candidate 1
+            </button>
+            <button 
+              onClick={() => vote(2)}
+              disabled={!account || hasVoted}
+              className={`py-3 rounded-lg font-semibold transition ${
+                account && !hasVoted
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Vote for Candidate 2
+            </button>
+            <button 
+              onClick={() => vote(3)}
+              disabled={!account || hasVoted}
+              className={`py-3 rounded-lg font-semibold transition ${
+                account && !hasVoted
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Vote for Candidate 3
+            </button>
+            <button 
+              onClick={() => vote(4)}
+              disabled={!account || hasVoted}
+              className={`py-3 rounded-lg font-semibold transition ${
+                account && !hasVoted
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Vote for Candidate 4
+            </button>
+          </div>
+          <p className="text-center text-sm text-gray-400 mt-3">
+            📝 Click to vote → MetaMask popup → Confirm transaction → Vote recorded
+          </p>
+          
+          <div className="mt-6 pt-6 border-t border-slate-700">
+            <h3 className="text-lg font-semibold mb-3 text-center">🔍 Check Individual Results</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <button 
+                onClick={() => getVotes(1)}
+                className="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg font-medium transition text-white"
+              >
+                Check Candidate 1
+              </button>
+              <button 
+                onClick={() => getVotes(2)}
+                className="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg font-medium transition text-white"
+              >
+                Check Candidate 2
+              </button>
+              <button 
+                onClick={() => getVotes(3)}
+                className="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg font-medium transition text-white"
+              >
+                Check Candidate 3
+              </button>
+              <button 
+                onClick={() => getVotes(4)}
+                className="bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg font-medium transition text-white"
+              >
+                Check Candidate 4
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* LIVE RESULTS DASHBOARD */}
       <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
@@ -251,131 +411,7 @@ function App() {
         )}
       </div>
 
-      {/* DOCUMENT REGISTRATION SECTION */}
-      <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md text-center mb-10">
-        <h2 className="text-2xl font-bold mb-4 text-blue-400">
-          📄 Register Document
-        </h2>
-        
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Enter document hash (e.g., HASH123)"
-            className="w-full px-4 py-2 bg-slate-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            id="documentHash"
-          />
-        </div>
 
-        <button
-          onClick={() => {
-            const hashInput = document.getElementById("documentHash").value;
-            if (hashInput.trim()) {
-              registerDocument(hashInput.trim());
-            } else {
-              alert("Please enter a document hash");
-            }
-          }}
-          disabled={!account}
-          className={`w-full py-3 rounded-lg font-semibold transition ${
-            account
-              ? "bg-blue-600 hover:bg-blue-700 text-white"
-              : "bg-gray-600 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          {account ? "📝 Register Document" : "🔐 Connect Wallet First"}
-        </button>
-
-        <button
-          onClick={() => registerDocument("HASH123")}
-          disabled={!account}
-          className={`w-full py-2 rounded-lg font-medium transition mt-4 ${
-            account
-              ? "bg-purple-600 hover:bg-purple-700 text-white"
-              : "bg-gray-600 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          🧪 Test Register "HASH123"
-        </button>
-      </div>
-
-      {/* DOCUMENT VERIFICATION SECTION */}
-      <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md text-center mb-10">
-        <h2 className="text-2xl font-bold mb-4 text-green-400">
-          🔍 Verify Document
-        </h2>
-        
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Enter document hash to verify"
-            className="w-full px-4 py-2 bg-slate-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-            id="verifyHash"
-          />
-        </div>
-
-        <button
-          onClick={() => {
-            const hashInput = document.getElementById("verifyHash").value;
-            if (hashInput.trim()) {
-              verifyDocument(hashInput.trim());
-            } else {
-              alert("Please enter a document hash");
-            }
-          }}
-          disabled={!account}
-          className={`w-full py-3 rounded-lg font-semibold transition ${
-            account
-              ? "bg-green-600 hover:bg-green-700 text-white"
-              : "bg-gray-600 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          {account ? "✅ Verify Document" : "🔐 Connect Wallet First"}
-        </button>
-
-        <button
-          onClick={() => checkDocument("HASH123")}
-          disabled={!account}
-          className={`w-full py-2 rounded-lg font-medium transition mt-4 ${
-            account
-              ? "bg-orange-600 hover:bg-orange-700 text-white"
-              : "bg-gray-600 text-gray-400 cursor-not-allowed"
-          }`}
-        >
-          🔍 Test Check "HASH123"
-        </button>
-      </div>
-
-      {/* CANDIDATES GRID */}
-      <div className="grid md:grid-cols-2 gap-6 w-full max-w-4xl">
-
-        {candidates.map((candidate) => (
-          <div
-            key={candidate}
-            className="bg-slate-800 p-6 rounded-2xl shadow-xl text-center hover:scale-105 transition"
-          >
-            <h2 className="text-2xl font-bold mb-4">
-              {candidate}
-            </h2>
-
-            <div className="text-3xl font-bold text-green-400 mb-4">
-              🗳 {voteCounts[candidate] || 0} votes
-            </div>
-
-            <button
-              onClick={() => vote(candidate)}
-              disabled={!account || hasVoted}
-              className={`w-full py-3 rounded-lg font-semibold transition ${
-                account && !hasVoted
-                  ? "bg-green-600 hover:bg-green-700"
-                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              {hasVoted ? "Already Voted" : "Vote"}
-            </button>
-          </div>
-        ))}
-
-      </div>
 
     </div>
   );

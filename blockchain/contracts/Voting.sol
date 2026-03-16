@@ -26,20 +26,20 @@ contract Voting {
 
     constructor() {
         admin = msg.sender;
-        electionActive = true;
-        addCandidate("Edward");
-        addCandidate("Silina");
-        addCandidate("Marveous");
-        addCandidate("Kachilenga");
+        electionActive = false;
     }
 
     function addCandidate(string memory _name) public onlyAdmin {
+        require(!electionActive, "Cannot add candidates after election starts");
+        
         candidatesCount++;
         candidates[candidatesCount] = Candidate(candidatesCount, _name, 0);
     }
 
     // Step 6 — Control functions
     function startElection() public onlyAdmin {
+        require(candidatesCount > 0, "No candidates registered");
+        
         electionActive = true;
     }
 
@@ -52,6 +52,8 @@ contract Voting {
     );
 
     function vote(uint _candidateId) public {
+        require(msg.sender != admin, "Admin cannot vote");
+        
         require(electionActive, "Election is not active");
 
         require(!voters[msg.sender], "You have already voted");
@@ -70,6 +72,8 @@ contract Voting {
     }
 
     function getVotes(uint _candidateId) public view returns(uint) {
+        require(!electionActive, "Results available after election ends");
+        
         return candidates[_candidateId].voteCount;
     }
 }

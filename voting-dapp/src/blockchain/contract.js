@@ -5,7 +5,7 @@ import { ethers } from "ethers";
  * This file acts as the bridge between the React frontend and the deployed Smart Contract.
  */
 
-// The address where the DocumentVerification contract is deployed on the local blockchain
+// The address where the Voting contract is deployed on the local blockchain
 export const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 // The Application Binary Interface (ABI) tells Ethers.js how to talk to the contract functions
@@ -14,6 +14,19 @@ export const CONTRACT_ABI = [
     "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "_candidateId",
+        "type": "uint256"
+      }
+    ],
+    "name": "votedEvent",
+    "type": "event"
   },
   {
     "inputs": [
