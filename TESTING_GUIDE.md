@@ -18,6 +18,7 @@ npx hardhat run scripts/deployVoting.js --network localhost
 cd blockchain
 npx hardhat run scripts/initElection.js --network localhost
 ```
+and copy the contract address that is displayed in the console. and paste it in the contracts.js file in the voting-dapp/src/blockchain/ directory.
 
 ### Step 3: Start Frontend
 ```bash
