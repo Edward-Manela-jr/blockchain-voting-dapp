@@ -1,13 +1,13 @@
 const hre = require("hardhat");
 
 async function main() {
-  console.log("Initializing NEW Voting contract...");
+  console.log("Initializing CLEAN Voting contract...");
 
   // Get the NEW contract
   const Voting = await hre.ethers.getContractFactory("Voting");
-  const voting = await hre.ethers.getContractAt("Voting", "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853");
+  const voting = await hre.ethers.getContractAt("Voting", "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6");
 
-  // Add candidates
+  // Add candidates with proper names
   console.log("Adding candidates...");
   await voting.addCandidate("Edward");
   console.log("Added Edward");
@@ -25,8 +25,9 @@ async function main() {
   console.log("Starting election...");
   await voting.startElection();
 
-  console.log("✅ NEW Election initialized successfully!");
-  console.log("Candidates added and election is now active.");
+  console.log("✅ CLEAN Election initialized successfully!");
+  console.log("4 unique candidates added and election is now active.");
+  console.log("Duplicate protection enabled!");
 }
 
 main().catch((error) => {
