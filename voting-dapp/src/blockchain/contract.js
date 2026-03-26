@@ -6,7 +6,7 @@ import { ethers } from "ethers";
  */
 
 // The address where the Voting contract is deployed on the local blockchain
-export const CONTRACT_ADDRESS = "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6";
+export const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 // The Application Binary Interface (ABI) tells Ethers.js how to talk to the contract functions
 export const CONTRACT_ABI = [
@@ -173,6 +173,57 @@ export const CONTRACT_ABI = [
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_voter",
+        "type": "address"
+      }
+    ],
+    "name": "registerVoter",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "registeredVoters",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "hasVoted",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   }
 ];
 
@@ -188,7 +239,7 @@ export const getContract = async () => {
     return null;
   }
 
-  // Connect to MetaMask as the provider
+  // Create a fresh provider each time to avoid stale nonce issues
   const provider = new ethers.BrowserProvider(window.ethereum);
 
   // Get the connected wallet user (signer) to sign transactions
@@ -202,4 +253,20 @@ export const getContract = async () => {
   );
 
   return contract;
+};
+
+/**
+ * sendTx - Helper to send a contract transaction with the correct nonce
+ * Queries the nonce DIRECTLY from the Hardhat node (bypasses MetaMask cache entirely)
+ * Then passes the correct nonce as a transaction override
+ */
+export const sendTx = async (contractMethod, ...args) => {
+  // Query nonce directly from Hardhat node — NOT through MetaMask
+  const directProvider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
+  const browserProvider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await browserProvider.getSigner();
+  const nonce = await directProvider.getTransactionCount(signer.address, "latest");
+  
+  console.log(`[sendTx] Using nonce: ${nonce} for ${signer.address}`);
+  return contractMethod(...args, { nonce });
 };

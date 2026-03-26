@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.27;
 
 contract Voting {
     struct Candidate {
@@ -14,6 +14,9 @@ contract Voting {
     uint public candidatesCount;
     // Mapping to store accounts that have voted
     mapping(address => bool) public voters;
+    // Step 5 — Add Voter Registration Storage
+    mapping(address => bool) public registeredVoters;
+    mapping(address => bool) public hasVoted;
     // Step 5 — Add Election State Control
     bool public electionActive;
     // Step 6 — Admin for control
@@ -51,7 +54,13 @@ contract Voting {
     }
 
     function endElection() public onlyAdmin {
+        require(electionActive, "Election is not active");
         electionActive = false;
+    }
+
+    // Step 2 — Add Voter Registration Function
+    function registerVoter(address _voter) public onlyAdmin {
+        registeredVoters[_voter] = true;
     }
 
     event votedEvent (
@@ -63,6 +72,8 @@ contract Voting {
         
         require(electionActive, "Election is not active");
 
+        require(registeredVoters[msg.sender], "You are not registered to vote");
+
         require(!voters[msg.sender], "You have already voted");
 
         require(
@@ -71,6 +82,7 @@ contract Voting {
         );
 
         voters[msg.sender] = true;
+        hasVoted[msg.sender] = true;
 
         candidates[_candidateId].voteCount++;
 
