@@ -318,4 +318,36 @@ Why Not Just Use Normal Words?
 Marketing: Sounds more "techy" and important
 History: Computer scientists love fancy terms
 Precision: Specific meanings in programming
-Bottom Line: It's just a fancy way of saying "digital rules and receipts that everyone can see"!
+## DApp Restart & Nonce Sync Fixes
+
+### Problems Encountered Today
+- **App Breakage on Restart**: Every time `npx hardhat node` was restarted, a fresh blockchain was created, but the frontend was still trying to talk to the old state or showing admin controls to everyone.
+- **Role Confusion**: All connected wallets could see the Admin Panel because there was no `isAdmin` check in the UI.
+- **"Nonce too low" Errors**: MetaMask caches transaction counts (nonces). When the local blockchain is reset, MetaMask's count is higher than the blockchain's count, causing transactions to fail.
+- **Stale Nonce Cache**: Even after clearing MetaMask, `ethers.js` was still using cached nonces in the browser.
+
+### Solutions Implemented
+
+#### 1. Smart Contract Guard
+- Added `require(electionActive)` to `endElection()` in `Voting.sol` to prevent state corruption.
+
+#### 2. Auto-Config Deploy Script
+- Updated `deployVoting.js` to automatically write the new contract address to `contractAddress.js` and `contract.js`. This ensures the frontend always points to the latest deployment.
+
+#### 3. Role-Based UI Gating (`App.js`)
+- Added `isAdmin` state: The Admin Panel is now **hidden** unless the connected wallet is the contract owner.
+- Added `accountsChanged` listener: The app now auto-detects when you switch from Admin to Voter in MetaMask—no more browser refresh needed!
+- Election state tracking: Buttons are now disabled if the election is not active or if the user has already voted.
+
+#### 4. The "Permanent Nonce Fix" (`contract.js`)
+- Created a `sendTx` helper that queries the latest nonce **directly from the Hardhat node** (via a fresh `JsonRpcProvider`), completely bypassing MetaMask's unreliable nonce cache.
+- This fixed the "Nonce too low" errors for good.
+
+### How to Restart Safely
+1. Stop Hardhat and Frontend.
+2. Start Hardhat node: `npx hardhat node`.
+3. **Reset MetaMask**: Settings > Advanced > **Clear Activity Tab Data** (Mandatory).
+4. Deploy Contract: `npx hardhat run scripts/deployVoting.js --network localhost`.
+5. Start Frontend: `npm start`.
+6. Refresh Page (once).
+
