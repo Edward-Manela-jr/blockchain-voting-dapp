@@ -41,23 +41,17 @@ A Decentralized Voting DApp built on the Ethereum blockchain. This system provid
 
 ## 3. Advanced Features & Analysis
 
-### e. Gas Optimization
-- **Mapped Storage**: Used `mapping(address => bool)` for voters instead of lists to ensure O(1) lookups, saving gas on every vote.
-- **State Selection**: Used `uint256` for counts to align with EVM's native word size, preventing unnecessary bit-shifting.
-- **Gating Logic**: Placed `require` checks (like `onlyAdmin`) at the very top of functions to "fail early" and save gas on invalid transactions.
+### e. Gas Optimization & Efficiency
+- **Storage vs. Memory**: Prioritizing `memory` over `storage` for temporary variables (like string processing) to minimize costly EVM writes.
+- **Efficient Mappings**: Used `mapping(address => bool)` for voter verification, which is more gas-efficient than iterating through an array (`O(1)` vs `O(n)`).
+- **Constant & Immutable**: (Planned for future production) Using constant keywords for fixed values (like election name) to reduce contract deployment size and execution cost.
+- **Short-Circuiting**: Reordered boolean checks in `require` statements to fail as early as possible, preventing wasted gas on invalid txs.
 
-### f. Testing & State Transitions
-- **Tooling**: Used Hardhat for local blockchain simulation.
-- **Security Testing**: Validated that voters cannot vote twice, admin cannot vote, and candidates cannot be added after an election starts.
-- **State Logic**: Verified the `electionActive` toggle correctly enables/disables the voting UI and contract functions.
-
-### g. Architecture Overview
-The system follows a classic **Web3 DApp Architecture**:
-1. **Frontend (React)**: User interface for interaction.
-2. **Provider (Ethers.js)**: Bridge between the browser and the blockchain.
-3. **Wallet (MetaMask)**: Identity management and transaction signing.
-4. **Logic (Solidity)**: Immutable rules living on the blockchain.
-5. **Infrastructure (Hardhat)**: Local Ethereum-compatible test network.
+### g. Architecture & Tools Analysis
+- **Hardhat node**: Chosen over Ganache for its superior debugging capabilities, fast mining times, and built-in `console.log` support for smart contracts.
+- **Ethers.js v6**: Used the latest version for improved type safety and more robust provider/signer management compared to Web3.js.
+- **Direct RPC Nonce Management**: Implemented a specialized RPC call to bypass MetaMask's nonce cache, a common "Infrastructure" challenge in local development.
+- **Tailwind CSS**: Enabled a premium, responsive UI with zero custom CSS overhead, ensuring the "Accessibility" requirement was met.
 
 ---
 
