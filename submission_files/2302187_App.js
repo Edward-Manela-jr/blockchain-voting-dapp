@@ -309,7 +309,7 @@ function App() {
               ? "bg-yellow-600 text-white" 
               : "bg-blue-600 text-white"
           }`}>
-            {isAdmin ? "👑 Admin" : "🗳 Voter"}
+            {isAdmin ? "👨‍💻 Admin" : "🗳 Voter"}
           </span>
         </div>
       )}
@@ -317,7 +317,7 @@ function App() {
       {/* ADMIN PANEL — Only visible to admin */}
       {account && isAdmin && (
         <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-center">👑 Admin Panel</h2>
+          <h2 className="text-2xl font-bold mb-4 text-center">👨‍💻 Admin Panel</h2>
           <div className="flex flex-wrap gap-3 justify-center">
             <button 
               onClick={startElection}
