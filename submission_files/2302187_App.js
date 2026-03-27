@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getContract, sendTx } from "./blockchain/contract";
 
 function App() {
@@ -41,7 +41,7 @@ function App() {
       loadVoteCounts();
       loadElectionState();
     }
-  }, [account]);
+  }, [account, checkAdminStatus, checkVotingStatus, loadVoteCounts, loadElectionState]);
 
   // Auto-refresh results every 10 seconds
   useEffect(() => {
@@ -53,10 +53,10 @@ function App() {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [account]);
+  }, [account, loadVoteCounts, loadElectionState]);
 
   // Check if current wallet is the admin
-  const checkAdminStatus = async () => {
+  const checkAdminStatus = useCallback(async () => {
     try {
       const contract = await getContract();
       const adminAddress = await contract.admin();
@@ -65,10 +65,10 @@ function App() {
       console.error("Failed to check admin status:", err);
       setIsAdmin(false);
     }
-  };
+  }, [account]);
 
   // Check election active state
-  const loadElectionState = async () => {
+  const loadElectionState = useCallback(async () => {
     try {
       const contract = await getContract();
       const active = await contract.electionActive();
@@ -76,10 +76,10 @@ function App() {
     } catch (err) {
       console.error("Failed to load election state:", err);
     }
-  };
+  }, []);
 
   // Check if current user has already voted
-  const checkVotingStatus = async () => {
+  const checkVotingStatus = useCallback(async () => {
     try {
       const contract = await getContract();
       const voted = await contract.voters(account);
@@ -89,10 +89,10 @@ function App() {
     } catch (err) {
       console.error("Failed to check voting status:", err);
     }
-  };
+  }, [account]);
 
   // Load vote counts for all candidates from the contract
-  const loadVoteCounts = async () => {
+  const loadVoteCounts = useCallback(async () => {
     try {
       const contract = await getContract();
       const counts = {};
@@ -124,7 +124,7 @@ function App() {
     } catch (err) {
       console.error("Failed to load vote counts:", err);
     }
-  };
+  }, [account]);
 
   // =============================
   // CONNECT WALLET
