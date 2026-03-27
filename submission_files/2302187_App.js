@@ -13,48 +13,6 @@ function App() {
   const [electionActive, setElectionActive] = useState(false);
   const [candidateNames, setCandidateNames] = useState([]);
 
-  // Listen for MetaMask account changes — no more manual refresh!
-  useEffect(() => {
-    if (window.ethereum) {
-      const handleAccountsChanged = (accounts) => {
-        if (accounts.length > 0) {
-          setAccount(accounts[0]);
-        } else {
-          setAccount("");
-          setIsAdmin(false);
-        }
-      };
-
-      window.ethereum.on("accountsChanged", handleAccountsChanged);
-
-      return () => {
-        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
-      };
-    }
-  }, []);
-
-  // Load contract state when account changes
-  useEffect(() => {
-    if (account) {
-      checkAdminStatus();
-      checkVotingStatus();
-      loadVoteCounts();
-      loadElectionState();
-    }
-  }, [account, checkAdminStatus, checkVotingStatus, loadVoteCounts, loadElectionState]);
-
-  // Auto-refresh results every 10 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (account) {
-        loadVoteCounts();
-        loadElectionState();
-      }
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [account, loadVoteCounts, loadElectionState]);
-
   // Check if current wallet is the admin
   const checkAdminStatus = useCallback(async () => {
     try {
@@ -125,6 +83,49 @@ function App() {
       console.error("Failed to load vote counts:", err);
     }
   }, [account]);
+
+  // Listen for MetaMask account changes — no more manual refresh!
+  useEffect(() => {
+    if (window.ethereum) {
+      const handleAccountsChanged = (accounts) => {
+        if (accounts.length > 0) {
+          setAccount(accounts[0]);
+        } else {
+          setAccount("");
+          setIsAdmin(false);
+        }
+      };
+
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+
+      return () => {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+      };
+    }
+  }, []);
+
+  // Load contract state when account changes
+  useEffect(() => {
+    if (account) {
+      checkAdminStatus();
+      checkVotingStatus();
+      loadVoteCounts();
+      loadElectionState();
+    }
+  }, [account, checkAdminStatus, checkVotingStatus, loadVoteCounts, loadElectionState]);
+
+  // Auto-refresh results every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (account) {
+        loadVoteCounts();
+        loadElectionState();
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [account, loadVoteCounts, loadElectionState]);
+
 
   // =============================
   // CONNECT WALLET
