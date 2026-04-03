@@ -136,26 +136,6 @@ export const CONTRACT_ABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "startElection",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_candidateId",
-        "type": "uint256"
-      }
-    ],
-    "name": "vote",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "address",
@@ -163,7 +143,7 @@ export const CONTRACT_ABI = [
         "type": "address"
       }
     ],
-    "name": "voters",
+    "name": "hasVoted",
     "outputs": [
       {
         "internalType": "bool",
@@ -207,6 +187,26 @@ export const CONTRACT_ABI = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "startElection",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_candidateId",
+        "type": "uint256"
+      }
+    ],
+    "name": "vote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -214,7 +214,7 @@ export const CONTRACT_ABI = [
         "type": "address"
       }
     ],
-    "name": "hasVoted",
+    "name": "voters",
     "outputs": [
       {
         "internalType": "bool",

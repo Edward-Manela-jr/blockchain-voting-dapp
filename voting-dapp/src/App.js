@@ -12,15 +12,24 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [electionActive, setElectionActive] = useState(false);
   const [candidateNames, setCandidateNames] = useState([]);
+  const [error, setError] = useState("");
 
   // Check if current wallet is the admin
   const checkAdminStatus = useCallback(async () => {
     try {
       const contract = await getContract();
+      if (!contract) {
+        console.error("Contract not available");
+        setIsAdmin(false);
+        return;
+      }
       const adminAddress = await contract.admin();
+      console.log("Admin address:", adminAddress);
+      console.log("Current account:", account);
       setIsAdmin(adminAddress.toLowerCase() === account.toLowerCase());
     } catch (err) {
       console.error("Failed to check admin status:", err);
+      console.error("Error details:", JSON.stringify(err, null, 2));
       setIsAdmin(false);
     }
   }, [account]);
@@ -289,6 +298,19 @@ function App() {
   // =============================
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-black text-white flex flex-col items-center p-6">
+
+      {/* ERROR DISPLAY */}
+      {error && (
+        <div className="bg-red-600 text-white p-4 rounded-lg mb-4 max-w-4xl w-full">
+          <strong>Error:</strong> {error}
+          <button 
+            onClick={() => setError("")}
+            className="ml-4 bg-red-800 px-2 py-1 rounded"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* TITLE */}
       <h1 className="text-4xl font-bold mb-2 text-center">
