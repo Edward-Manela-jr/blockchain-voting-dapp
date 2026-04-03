@@ -1,4 +1,7 @@
 {
+  "name": "blockchain-voting-dapp",
+  "description": "Blockchain-based voting system with Solidity smart contracts and React frontend",
+  "private": true,
   "devDependencies": {
     "hardhat": "^3.2.0"
   }
