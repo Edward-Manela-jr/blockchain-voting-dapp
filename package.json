@@ -1,1 +1,5 @@
-{}
+{
+  "name": "blockchain-voting-dapp",
+  "description": "Blockchain-based voting system with Solidity smart contracts and React frontend",
+  "private": true
+}
