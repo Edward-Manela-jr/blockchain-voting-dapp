@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getContract, sendTx } from "./blockchain/contract";
 
 function App() {
@@ -13,50 +13,8 @@ function App() {
   const [electionActive, setElectionActive] = useState(false);
   const [candidateNames, setCandidateNames] = useState([]);
 
-  // Listen for MetaMask account changes — no more manual refresh!
-  useEffect(() => {
-    if (window.ethereum) {
-      const handleAccountsChanged = (accounts) => {
-        if (accounts.length > 0) {
-          setAccount(accounts[0]);
-        } else {
-          setAccount("");
-          setIsAdmin(false);
-        }
-      };
-
-      window.ethereum.on("accountsChanged", handleAccountsChanged);
-
-      return () => {
-        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
-      };
-    }
-  }, []);
-
-  // Load contract state when account changes
-  useEffect(() => {
-    if (account) {
-      checkAdminStatus();
-      checkVotingStatus();
-      loadVoteCounts();
-      loadElectionState();
-    }
-  }, [account]);
-
-  // Auto-refresh results every 10 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (account) {
-        loadVoteCounts();
-        loadElectionState();
-      }
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [account]);
-
   // Check if current wallet is the admin
-  const checkAdminStatus = async () => {
+  const checkAdminStatus = useCallback(async () => {
     try {
       const contract = await getContract();
       const adminAddress = await contract.admin();
@@ -65,10 +23,10 @@ function App() {
       console.error("Failed to check admin status:", err);
       setIsAdmin(false);
     }
-  };
+  }, [account]);
 
   // Check election active state
-  const loadElectionState = async () => {
+  const loadElectionState = useCallback(async () => {
     try {
       const contract = await getContract();
       const active = await contract.electionActive();
@@ -76,10 +34,10 @@ function App() {
     } catch (err) {
       console.error("Failed to load election state:", err);
     }
-  };
+  }, []);
 
   // Check if current user has already voted
-  const checkVotingStatus = async () => {
+  const checkVotingStatus = useCallback(async () => {
     try {
       const contract = await getContract();
       const voted = await contract.voters(account);
@@ -89,10 +47,10 @@ function App() {
     } catch (err) {
       console.error("Failed to check voting status:", err);
     }
-  };
+  }, [account]);
 
   // Load vote counts for all candidates from the contract
-  const loadVoteCounts = async () => {
+  const loadVoteCounts = useCallback(async () => {
     try {
       const contract = await getContract();
       const counts = {};
@@ -124,7 +82,50 @@ function App() {
     } catch (err) {
       console.error("Failed to load vote counts:", err);
     }
-  };
+  }, [account]);
+
+  // Listen for MetaMask account changes — no more manual refresh!
+  useEffect(() => {
+    if (window.ethereum) {
+      const handleAccountsChanged = (accounts) => {
+        if (accounts.length > 0) {
+          setAccount(accounts[0]);
+        } else {
+          setAccount("");
+          setIsAdmin(false);
+        }
+      };
+
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+
+      return () => {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+      };
+    }
+  }, []);
+
+  // Load contract state when account changes
+  useEffect(() => {
+    if (account) {
+      checkAdminStatus();
+      checkVotingStatus();
+      loadVoteCounts();
+      loadElectionState();
+    }
+  }, [account, checkAdminStatus, checkVotingStatus, loadVoteCounts, loadElectionState]);
+
+  // Auto-refresh results every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (account) {
+        loadVoteCounts();
+        loadElectionState();
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [account, loadVoteCounts, loadElectionState]);
+
 
   // =============================
   // CONNECT WALLET
@@ -297,19 +298,17 @@ function App() {
       {/* ELECTION STATUS BADGE */}
       {account && (
         <div className="mb-8 flex items-center gap-3">
-          <span className={`px-4 py-1 rounded-full text-sm font-semibold ${
-            electionActive 
-              ? "bg-green-600 text-white" 
-              : "bg-gray-600 text-gray-300"
-          }`}>
+          <span className={`px-4 py-1 rounded-full text-sm font-semibold ${electionActive
+            ? "bg-green-600 text-white"
+            : "bg-gray-600 text-gray-300"
+            }`}>
             {electionActive ? "🟢 Election Active" : "⚪ Election Not Active"}
           </span>
-          <span className={`px-4 py-1 rounded-full text-sm font-semibold ${
-            isAdmin 
-              ? "bg-yellow-600 text-white" 
-              : "bg-blue-600 text-white"
-          }`}>
-            {isAdmin ? "👑 Admin" : "🗳 Voter"}
+          <span className={`px-4 py-1 rounded-full text-sm font-semibold ${isAdmin
+            ? "bg-yellow-600 text-white"
+            : "bg-blue-600 text-white"
+            }`}>
+            {isAdmin ? "👨‍💻 Admin" : "🗳 Voter"}
           </span>
         </div>
       )}
@@ -317,79 +316,73 @@ function App() {
       {/* ADMIN PANEL — Only visible to admin */}
       {account && isAdmin && (
         <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-center">👑 Admin Panel</h2>
+          <h2 className="text-2xl font-bold mb-4 text-center">👨‍💻 Admin Panel</h2>
           <div className="flex flex-wrap gap-3 justify-center">
-            <button 
+            <button
               onClick={startElection}
               disabled={electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
-                electionActive 
-                  ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                  : "bg-green-600 hover:bg-green-700"
-              }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${electionActive
+                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700"
+                }`}
             >
               🚀 Start Election
             </button>
-            <button 
+            <button
               onClick={endElection}
               disabled={!electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
-                !electionActive 
-                  ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                  : "bg-red-600 hover:bg-red-700"
-              }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${!electionActive
+                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700"
+                }`}
             >
               🛑 End Election
             </button>
-            <button 
+            <button
               onClick={() => addCandidate("Edward")}
               disabled={electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
-                electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-              }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                }`}
             >
               Add Edward
             </button>
-            <button 
+            <button
               onClick={() => addCandidate("Silina")}
               disabled={electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
-                electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-              }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                }`}
             >
               Add Silina
             </button>
-            <button 
+            <button
               onClick={() => addCandidate("Marvieous")}
               disabled={electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
-                electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-              }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                }`}
             >
               Add Marvieous
             </button>
-            <button 
+            <button
               onClick={() => addCandidate("Kachilenga")}
               disabled={electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${
-                electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-              }`}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+                }`}
             >
               Add Kachilenga
             </button>
           </div>
-          
+
           <div className="mt-6 flex flex-col items-center gap-3 border-t border-slate-700 pt-6 w-full">
             <h3 className="text-lg font-semibold">Register a Voter</h3>
             <div className="flex gap-2 w-full max-w-md">
-              <input 
-                type="text" 
-                placeholder="Voter Address (0x...)" 
+              <input
+                type="text"
+                placeholder="Voter Address (0x...)"
                 value={voterAddress}
                 onChange={(e) => setVoterAddress(e.target.value)}
                 className="flex-1 px-3 py-2 rounded-lg text-black"
               />
-              <button 
+              <button
                 onClick={registerVoter}
                 className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg font-semibold transition"
               >
@@ -408,26 +401,25 @@ function App() {
       {account && !isAdmin && (
         <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
           <h2 className="text-2xl font-bold mb-4 text-center">🗳 Cast Your Vote</h2>
-          
+
           {!electionActive && (
             <p className="text-center text-yellow-400 mb-4">⏳ Election is not active yet. Please wait for the admin to start it.</p>
           )}
-          
+
           {!isRegistered && (
             <p className="text-center text-red-400 mb-4">❌ You are not registered to vote. Ask the admin to register your address.</p>
           )}
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {displayCandidates.map((name, index) => (
-              <button 
+              <button
                 key={index}
                 onClick={() => vote(index + 1)}
                 disabled={!electionActive || hasVoted || !isRegistered}
-                className={`py-3 rounded-lg font-semibold transition ${
-                  electionActive && !hasVoted && isRegistered
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-gray-600 text-gray-400 cursor-not-allowed"
-                }`}
+                className={`py-3 rounded-lg font-semibold transition ${electionActive && !hasVoted && isRegistered
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                  }`}
               >
                 Vote for {name}
               </button>
@@ -436,7 +428,7 @@ function App() {
           <p className="text-center text-sm text-gray-400 mt-3">
             📝 Click to vote → MetaMask popup → Confirm transaction → Vote recorded
           </p>
-          
+
           <div className="mt-6 pt-6 border-t border-slate-700">
             <h3 className="text-lg font-semibold mb-3 text-center">🔍 Check Individual Results</h3>
             {electionActive && (
@@ -444,15 +436,14 @@ function App() {
             )}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {displayCandidates.map((name, index) => (
-                <button 
+                <button
                   key={index}
                   onClick={() => getVotes(index + 1)}
                   disabled={electionActive}
-                  className={`px-3 py-2 rounded-lg font-medium transition ${
-                    electionActive
-                      ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                      : "bg-purple-600 hover:bg-purple-700 text-white"
-                  }`}
+                  className={`px-3 py-2 rounded-lg font-medium transition ${electionActive
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : "bg-purple-600 hover:bg-purple-700 text-white"
+                    }`}
                 >
                   Check {name}
                 </button>
@@ -465,7 +456,7 @@ function App() {
       {/* LIVE RESULTS DASHBOARD */}
       <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
         <h2 className="text-2xl font-bold mb-4 text-center">📊 Live Results</h2>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-slate-700 p-4 rounded-lg text-center">
             <div className="text-3xl font-bold text-blue-400">{totalVotes}</div>
@@ -496,7 +487,7 @@ function App() {
               <div key={candidate} className="flex items-center gap-3">
                 <div className="w-24 text-sm font-medium">{candidate}</div>
                 <div className="flex-1 bg-slate-700 rounded-full h-8 relative overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-end pr-2"
                     style={{ width: `${percentage}%` }}
                   >
@@ -532,7 +523,7 @@ function App() {
               {account}
             </p>
             <p className={`text-sm mb-2 ${isAdmin ? "text-yellow-400" : ""}`}>
-              {isAdmin ? "👑 You are the Admin" : ""}
+              {isAdmin ? "👨‍💻 You are the Admin" : ""}
             </p>
             {!isAdmin && (
               isRegistered ? (

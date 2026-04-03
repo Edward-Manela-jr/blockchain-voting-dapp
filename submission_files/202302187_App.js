@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getContract, sendTx } from "./blockchain/contract";
 
 function App() {
@@ -13,50 +13,8 @@ function App() {
   const [electionActive, setElectionActive] = useState(false);
   const [candidateNames, setCandidateNames] = useState([]);
 
-  // Listen for MetaMask account changes — no more manual refresh!
-  useEffect(() => {
-    if (window.ethereum) {
-      const handleAccountsChanged = (accounts) => {
-        if (accounts.length > 0) {
-          setAccount(accounts[0]);
-        } else {
-          setAccount("");
-          setIsAdmin(false);
-        }
-      };
-
-      window.ethereum.on("accountsChanged", handleAccountsChanged);
-
-      return () => {
-        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
-      };
-    }
-  }, []);
-
-  // Load contract state when account changes
-  useEffect(() => {
-    if (account) {
-      checkAdminStatus();
-      checkVotingStatus();
-      loadVoteCounts();
-      loadElectionState();
-    }
-  }, [account]);
-
-  // Auto-refresh results every 10 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (account) {
-        loadVoteCounts();
-        loadElectionState();
-      }
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [account]);
-
   // Check if current wallet is the admin
-  const checkAdminStatus = async () => {
+  const checkAdminStatus = useCallback(async () => {
     try {
       const contract = await getContract();
       const adminAddress = await contract.admin();
@@ -65,10 +23,10 @@ function App() {
       console.error("Failed to check admin status:", err);
       setIsAdmin(false);
     }
-  };
+  }, [account]);
 
   // Check election active state
-  const loadElectionState = async () => {
+  const loadElectionState = useCallback(async () => {
     try {
       const contract = await getContract();
       const active = await contract.electionActive();
@@ -76,10 +34,10 @@ function App() {
     } catch (err) {
       console.error("Failed to load election state:", err);
     }
-  };
+  }, []);
 
   // Check if current user has already voted
-  const checkVotingStatus = async () => {
+  const checkVotingStatus = useCallback(async () => {
     try {
       const contract = await getContract();
       const voted = await contract.voters(account);
@@ -89,10 +47,10 @@ function App() {
     } catch (err) {
       console.error("Failed to check voting status:", err);
     }
-  };
+  }, [account]);
 
   // Load vote counts for all candidates from the contract
-  const loadVoteCounts = async () => {
+  const loadVoteCounts = useCallback(async () => {
     try {
       const contract = await getContract();
       const counts = {};
@@ -124,7 +82,50 @@ function App() {
     } catch (err) {
       console.error("Failed to load vote counts:", err);
     }
-  };
+  }, [account]);
+
+  // Listen for MetaMask account changes — no more manual refresh!
+  useEffect(() => {
+    if (window.ethereum) {
+      const handleAccountsChanged = (accounts) => {
+        if (accounts.length > 0) {
+          setAccount(accounts[0]);
+        } else {
+          setAccount("");
+          setIsAdmin(false);
+        }
+      };
+
+      window.ethereum.on("accountsChanged", handleAccountsChanged);
+
+      return () => {
+        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+      };
+    }
+  }, []);
+
+  // Load contract state when account changes
+  useEffect(() => {
+    if (account) {
+      checkAdminStatus();
+      checkVotingStatus();
+      loadVoteCounts();
+      loadElectionState();
+    }
+  }, [account, checkAdminStatus, checkVotingStatus, loadVoteCounts, loadElectionState]);
+
+  // Auto-refresh results every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (account) {
+        loadVoteCounts();
+        loadElectionState();
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [account, loadVoteCounts, loadElectionState]);
+
 
   // =============================
   // CONNECT WALLET
@@ -309,7 +310,7 @@ function App() {
               ? "bg-yellow-600 text-white" 
               : "bg-blue-600 text-white"
           }`}>
-            {isAdmin ? "👑 Admin" : "🗳 Voter"}
+            {isAdmin ? "👨‍💻 Admin" : "🗳 Voter"}
           </span>
         </div>
       )}
@@ -317,7 +318,7 @@ function App() {
       {/* ADMIN PANEL — Only visible to admin */}
       {account && isAdmin && (
         <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-center">👑 Admin Panel</h2>
+          <h2 className="text-2xl font-bold mb-4 text-center">👨‍💻 Admin Panel</h2>
           <div className="flex flex-wrap gap-3 justify-center">
             <button 
               onClick={startElection}
