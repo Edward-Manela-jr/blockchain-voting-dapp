@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.27;
+
+contract Voting {
+    struct Candidate {
+        uint id;
+        string name;
+        uint voteCount;
+    }
+
+    // Mapping to store candidates
+    mapping(uint => Candidate) public candidates;
+    // Store candidates count
+    uint public candidatesCount;
+    // Mapping to store accounts that have voted
+    mapping(address => bool) public voters;
+    // Step 5 — Add Voter Registration Storage
+    mapping(address => bool) public registeredVoters;
+    mapping(address => bool) public hasVoted;
+    // Step 5 — Add Election State Control
+    bool public electionActive;
+    // Step 6 — Admin for control
+    address public admin;
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Only admin allowed");
+        _;
+    }
+
+    constructor() {
+        admin = msg.sender;
+        electionActive = false;
+    }
+
+    function addCandidate(string memory _name) public onlyAdmin {
+        require(!electionActive, "Cannot add candidates after election starts");
+        
+        // Check for duplicate candidate names
+        for(uint i = 1; i <= candidatesCount; i++) {
+            if(keccak256(bytes(candidates[i].name)) == keccak256(bytes(_name))) {
+                revert("Candidate already exists");
+            }
+        }
+        
+        candidatesCount++;
+        candidates[candidatesCount] = Candidate(candidatesCount, _name, 0);
+    }
+
+    // Step 6 — Control functions
+    function startElection() public onlyAdmin {
+        require(candidatesCount > 0, "No candidates registered");
+        
+        electionActive = true;
+    }
+
+    function endElection() public onlyAdmin {
+        require(electionActive, "Election is not active");
+        electionActive = false;
+    }
+
+    // Step 2 — Add Voter Registration Function
+    function registerVoter(address _voter) public onlyAdmin {
+        registeredVoters[_voter] = true;
+    }
+
+    event votedEvent (
+        uint indexed _candidateId
+    );
+
+    function vote(uint _candidateId) public {
+        require(msg.sender != admin, "Admin cannot vote");
+        
+        require(electionActive, "Election is not active");
+
+        require(registeredVoters[msg.sender], "You are not registered to vote");
+
+        require(!voters[msg.sender], "You have already voted");
+
+        require(
+            _candidateId > 0 && _candidateId <= candidatesCount,
+            "Invalid candidate"
+        );
+
+        voters[msg.sender] = true;
+        hasVoted[msg.sender] = true;
+
+        candidates[_candidateId].voteCount++;
+
+        // Trigger voted event
+        emit votedEvent(_candidateId);
+    }
+
+    function getVotes(uint _candidateId) public view returns(uint) {
+        require(!electionActive, "Results available after election ends");
+        
+        return candidates[_candidateId].voteCount;
+    }
+}
