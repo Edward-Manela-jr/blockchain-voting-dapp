@@ -282,7 +282,7 @@ function App() {
   // =============================
   // CANDIDATE LIST (from contract)
   // =============================
-  const displayCandidates = candidateNames.length > 0 ? candidateNames : ["Edward", "Silina", "Marvieous", "Kachilenga"];
+  const displayCandidates = candidateNames.length > 0 ? candidateNames : ["Edward", "Silina", "Marvious", "Kachilenga"];
 
   // =============================
   // UI
@@ -340,7 +340,7 @@ function App() {
               End Election
             </button>
             <div className="w-full border-t border-gray-100 my-2"></div>
-            {["Edward", "Silina", "Marvieous", "Kachilenga"].map((name) => (
+            {["Edward", "Silina", "Marvious", "Kachilenga"].map((name) => (
               <button
                 key={name}
                 onClick={() => addCandidate(name)}
