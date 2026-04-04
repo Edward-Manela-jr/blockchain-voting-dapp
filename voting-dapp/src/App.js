@@ -288,161 +288,148 @@ function App() {
   // UI
   // =============================
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-black text-white flex flex-col items-center p-6">
+    <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col items-center p-6">
 
-      {/* TITLE */}
-      <h1 className="text-4xl font-bold mb-2 text-center">
-        🗳 Blockchain Voting System
-      </h1>
+      <header className="w-full max-w-4xl mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Blockchain Voting System
+        </h1>
+        <p className="text-gray-500 mt-1">Decentralized election platform powered by Ethereum</p>
 
-      {/* ELECTION STATUS BADGE */}
-      {account && (
-        <div className="mb-8 flex items-center gap-3">
-          <span className={`px-4 py-1 rounded-full text-sm font-semibold ${electionActive
-            ? "bg-green-600 text-white"
-            : "bg-gray-600 text-gray-300"
-            }`}>
-            {electionActive ? "🟢 Election Active" : "⚪ Election Not Active"}
-          </span>
-          <span className={`px-4 py-1 rounded-full text-sm font-semibold ${isAdmin
-            ? "bg-yellow-600 text-white"
-            : "bg-blue-600 text-white"
-            }`}>
-            {isAdmin ? "👨‍💻 Admin" : "🗳 Voter"}
-          </span>
-        </div>
-      )}
+        {account && (
+          <div className="mt-4 flex items-center gap-2">
+            <span className={`px-3 py-1 rounded text-xs font-medium border ${electionActive
+              ? "border-green-300 bg-green-50 text-green-700"
+              : "border-gray-300 bg-gray-100 text-gray-500"
+              }`}>
+              {electionActive ? "Election Active" : "Election Not Active"}
+            </span>
+            <span className={`px-3 py-1 rounded text-xs font-medium border ${isAdmin
+              ? "border-amber-300 bg-amber-50 text-amber-700"
+              : "border-indigo-300 bg-indigo-50 text-indigo-700"
+              }`}>
+              {isAdmin ? "Admin" : "Voter"}
+            </span>
+          </div>
+        )}
+      </header>
 
-      {/* ADMIN PANEL — Only visible to admin */}
       {account && isAdmin && (
-        <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-center">👨‍💻 Admin Panel</h2>
-          <div className="flex flex-wrap gap-3 justify-center">
+        <div className="bg-white border border-gray-200 rounded-lg p-6 w-full max-w-4xl mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Admin Panel</h2>
+
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={startElection}
               disabled={electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${electionActive
-                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
+              className={`px-4 py-2 rounded text-sm font-medium transition ${electionActive
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700 text-white"
                 }`}
             >
-              🚀 Start Election
+              Start Election
             </button>
             <button
               onClick={endElection}
               disabled={!electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${!electionActive
-                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700"
+              className={`px-4 py-2 rounded text-sm font-medium transition ${!electionActive
+                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                : "bg-red-600 hover:bg-red-700 text-white"
                 }`}
             >
-              🛑 End Election
+              End Election
             </button>
-            <button
-              onClick={() => addCandidate("Edward")}
-              disabled={electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                }`}
-            >
-              Add Edward
-            </button>
-            <button
-              onClick={() => addCandidate("Silina")}
-              disabled={electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                }`}
-            >
-              Add Silina
-            </button>
-            <button
-              onClick={() => addCandidate("Marvieous")}
-              disabled={electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                }`}
-            >
-              Add Marvieous
-            </button>
-            <button
-              onClick={() => addCandidate("Kachilenga")}
-              disabled={electionActive}
-              className={`px-4 py-2 rounded-lg font-semibold transition ${electionActive ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-                }`}
-            >
-              Add Kachilenga
-            </button>
+            <div className="w-full border-t border-gray-100 my-2"></div>
+            {["Edward", "Silina", "Marvieous", "Kachilenga"].map((name) => (
+              <button
+                key={name}
+                onClick={() => addCandidate(name)}
+                disabled={electionActive}
+                className={`px-4 py-2 rounded text-sm font-medium transition ${electionActive
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                  }`}
+              >
+                Add {name}
+              </button>
+            ))}
           </div>
 
-          <div className="mt-6 flex flex-col items-center gap-3 border-t border-slate-700 pt-6 w-full">
-            <h3 className="text-lg font-semibold">Register a Voter</h3>
-            <div className="flex gap-2 w-full max-w-md">
+          <div className="mt-6 pt-5 border-t border-gray-200">
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Register a Voter</label>
+            <div className="flex gap-2 max-w-lg">
               <input
                 type="text"
-                placeholder="Voter Address (0x...)"
+                placeholder="Wallet address (0x...)"
                 value={voterAddress}
                 onChange={(e) => setVoterAddress(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-lg text-black"
+                className="flex-1 px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
               <button
                 onClick={registerVoter}
-                className="bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg font-semibold transition"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-medium transition"
               >
                 Register
               </button>
             </div>
+            <p className="text-xs text-gray-400 mt-2">
+              Only the admin wallet can add candidates and register voters
+            </p>
           </div>
-
-          <p className="text-center text-sm text-gray-400 mt-4">
-            ⚠️ Only the admin wallet can add candidates and register voters
-          </p>
         </div>
       )}
 
-      {/* VOTING SECTION — Only for non-admin connected wallets */}
       {account && !isAdmin && (
-        <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
-          <h2 className="text-2xl font-bold mb-4 text-center">🗳 Cast Your Vote</h2>
+        <div className="bg-white border border-gray-200 rounded-lg p-6 w-full max-w-4xl mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Cast Your Vote</h2>
 
           {!electionActive && (
-            <p className="text-center text-yellow-400 mb-4">⏳ Election is not active yet. Please wait for the admin to start it.</p>
+            <p className="text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-2 mb-4">
+              Election is not active yet. Please wait for the admin to start it.
+            </p>
           )}
 
           {!isRegistered && (
-            <p className="text-center text-red-400 mb-4">❌ You are not registered to vote. Ask the admin to register your address.</p>
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded px-3 py-2 mb-4">
+              You are not registered to vote. Ask the admin to register your address.
+            </p>
           )}
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {displayCandidates.map((name, index) => (
               <button
                 key={index}
                 onClick={() => vote(index + 1)}
                 disabled={!electionActive || hasVoted || !isRegistered}
-                className={`py-3 rounded-lg font-semibold transition ${electionActive && !hasVoted && isRegistered
-                  ? "bg-green-600 hover:bg-green-700 text-white"
-                  : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                className={`py-3 rounded text-sm font-medium transition ${electionActive && !hasVoted && isRegistered
+                  ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
                   }`}
               >
                 Vote for {name}
               </button>
             ))}
           </div>
-          <p className="text-center text-sm text-gray-400 mt-3">
-            📝 Click to vote → MetaMask popup → Confirm transaction → Vote recorded
+          <p className="text-xs text-gray-400 mt-3">
+            Click to vote, then confirm the transaction in MetaMask
           </p>
 
-          <div className="mt-6 pt-6 border-t border-slate-700">
-            <h3 className="text-lg font-semibold mb-3 text-center">🔍 Check Individual Results</h3>
+          <div className="mt-6 pt-5 border-t border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">Check Individual Results</h3>
             {electionActive && (
-              <p className="text-center text-yellow-400 mb-3 text-sm">🔒 Results will be available after the election ends</p>
+              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-2 mb-3">
+                Results will be available after the election ends
+              </p>
             )}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               {displayCandidates.map((name, index) => (
                 <button
                   key={index}
                   onClick={() => getVotes(index + 1)}
                   disabled={electionActive}
-                  className={`px-3 py-2 rounded-lg font-medium transition ${electionActive
-                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                    : "bg-purple-600 hover:bg-purple-700 text-white"
+                  className={`px-3 py-2 rounded text-sm font-medium transition border ${electionActive
+                    ? "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
+                    : "bg-white text-indigo-600 border-indigo-300 hover:bg-indigo-50"
                     }`}
                 >
                   Check {name}
@@ -453,50 +440,48 @@ function App() {
         </div>
       )}
 
-      {/* LIVE RESULTS DASHBOARD */}
-      <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-4xl mb-8">
-        <h2 className="text-2xl font-bold mb-4 text-center">📊 Live Results</h2>
+      <div className="bg-white border border-gray-200 rounded-lg p-6 w-full max-w-4xl mb-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Live Results</h2>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-slate-700 p-4 rounded-lg text-center">
-            <div className="text-3xl font-bold text-blue-400">{totalVotes}</div>
-            <div className="text-sm text-gray-400">Total Votes</div>
+          <div className="p-4 rounded-lg bg-gray-50 text-center">
+            <div className="text-2xl font-bold text-gray-900">{totalVotes}</div>
+            <div className="text-xs text-gray-500 mt-1">Total Votes</div>
           </div>
-          <div className="bg-slate-700 p-4 rounded-lg text-center">
-            <div className="text-3xl font-bold text-green-400">{displayCandidates.length}</div>
-            <div className="text-sm text-gray-400">Candidates</div>
+          <div className="p-4 rounded-lg bg-gray-50 text-center">
+            <div className="text-2xl font-bold text-gray-900">{displayCandidates.length}</div>
+            <div className="text-xs text-gray-500 mt-1">Candidates</div>
           </div>
-          <div className="bg-slate-700 p-4 rounded-lg text-center">
-            <div className="text-3xl font-bold text-yellow-400">{leadingCandidate || "None"}</div>
-            <div className="text-sm text-gray-400">Leading</div>
+          <div className="p-4 rounded-lg bg-gray-50 text-center">
+            <div className="text-2xl font-bold text-gray-900">{leadingCandidate || "—"}</div>
+            <div className="text-xs text-gray-500 mt-1">Leading</div>
           </div>
-          <div className="bg-slate-700 p-4 rounded-lg text-center">
-            <div className="text-3xl font-bold text-purple-400">
+          <div className="p-4 rounded-lg bg-gray-50 text-center">
+            <div className="text-2xl font-bold text-gray-900">
               {totalVotes > 0 ? Math.round((voteCounts[leadingCandidate] || 0) / totalVotes * 100) : 0}%
             </div>
-            <div className="text-sm text-gray-400">Lead %</div>
+            <div className="text-xs text-gray-500 mt-1">Lead %</div>
           </div>
         </div>
 
-        {/* VOTE BARS */}
         <div className="space-y-3">
           {displayCandidates.map((candidate) => {
             const votes = voteCounts[candidate] || 0;
             const percentage = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
             return (
               <div key={candidate} className="flex items-center gap-3">
-                <div className="w-24 text-sm font-medium">{candidate}</div>
-                <div className="flex-1 bg-slate-700 rounded-full h-8 relative overflow-hidden">
+                <div className="w-24 text-sm font-medium text-gray-700">{candidate}</div>
+                <div className="flex-1 bg-gray-100 rounded h-7 relative overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full flex items-center justify-end pr-2"
+                    className="h-full bg-indigo-500 rounded flex items-center justify-end pr-2"
                     style={{ width: `${percentage}%` }}
                   >
                     {percentage > 10 && (
-                      <span className="text-xs font-bold text-white">{votes} votes</span>
+                      <span className="text-xs font-medium text-white">{votes}</span>
                     )}
                   </div>
                 </div>
-                <div className="w-16 text-right text-sm">
+                <div className="w-14 text-right text-sm text-gray-500">
                   {percentage.toFixed(1)}%
                 </div>
               </div>
@@ -505,40 +490,40 @@ function App() {
         </div>
       </div>
 
-      {/* WALLET CARD */}
-      <div className="bg-slate-800 p-6 rounded-2xl shadow-xl w-full max-w-md text-center mb-10">
+      <div className="bg-white border border-gray-200 rounded-lg p-6 w-full max-w-md text-center mb-10">
         {!account ? (
           <button
             onClick={connectWallet}
-            className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-semibold transition w-full"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded text-sm font-medium transition w-full"
           >
             Connect Wallet
           </button>
         ) : (
           <div>
-            <p className="text-green-400 mb-2">
-              Wallet Connected ✅
-            </p>
-            <p className="text-sm break-all font-mono mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-50 border border-green-200 mb-3">
+              <div className="w-2 h-2 rounded-full bg-green-500"></div>
+              <span className="text-sm text-green-700">Connected</span>
+            </div>
+            <p className="text-xs break-all font-mono text-gray-500 mb-3">
               {account}
             </p>
-            <p className={`text-sm mb-2 ${isAdmin ? "text-yellow-400" : ""}`}>
-              {isAdmin ? "👨‍💻 You are the Admin" : ""}
-            </p>
+            {isAdmin && (
+              <p className="text-sm font-medium text-amber-600 mb-2">Administrator</p>
+            )}
             {!isAdmin && (
               isRegistered ? (
-                <p className="text-blue-400 text-sm mb-2">✅ Registered to Vote</p>
+                <p className="text-sm text-green-600 mb-2">Registered to vote</p>
               ) : (
-                <p className="text-red-400 text-sm mb-2">❌ Not Registered (Admin must register you)</p>
+                <p className="text-sm text-red-500 mb-2">Not registered — admin must register you</p>
               )
             )}
             {hasVoted && (
-              <p className="text-yellow-400 text-sm">
-                🗳 You have already voted
+              <p className="text-sm text-gray-500">
+                You have already voted
               </p>
             )}
-            <p className="text-xs text-gray-500 mt-3">
-              💡 Switch accounts in MetaMask — the app will auto-detect
+            <p className="text-xs text-gray-400 mt-3">
+              Switch accounts in MetaMask — the app will auto-detect
             </p>
           </div>
         )}
