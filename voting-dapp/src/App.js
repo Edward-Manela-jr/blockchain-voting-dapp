@@ -12,6 +12,8 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [electionActive, setElectionActive] = useState(false);
   const [candidateNames, setCandidateNames] = useState([]);
+  const [newCandidateName, setNewCandidateName] = useState("");
+  const [statusMsg, setStatusMsg] = useState(null);
 
   // Check if current wallet is the admin
   const checkAdminStatus = useCallback(async () => {
@@ -127,6 +129,14 @@ function App() {
   }, [account, loadVoteCounts, loadElectionState]);
 
 
+  const truncateAddress = (addr) =>
+    addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : "";
+
+  const showStatus = (message, type = "success") => {
+    setStatusMsg({ message, type });
+    setTimeout(() => setStatusMsg(null), 4000);
+  };
+
   // =============================
   // CONNECT WALLET
   // =============================
@@ -152,13 +162,13 @@ function App() {
       const tx = await sendTx(contract.startElection.bind(contract));
       await tx.wait();
       setElectionActive(true);
-      alert("✅ Election started!");
+      showStatus("Election started successfully");
     } catch (err) {
       console.error("Failed to start election:", err);
       if (err.message.includes("No candidates")) {
-        alert("❌ Add candidates before starting the election!");
+        showStatus("Add candidates before starting the election", "error");
       } else {
-        alert("Failed to start election: " + err.message);
+        showStatus("Failed to start election", "error");
       }
     }
   };
@@ -171,16 +181,16 @@ function App() {
       const contract = await getContract();
       const tx = await sendTx(contract.addCandidate.bind(contract), name);
       await tx.wait();
-      alert("✅ Candidate added: " + name);
-      loadVoteCounts(); // Refresh the candidate list
+      showStatus("Candidate added: " + name);
+      loadVoteCounts();
     } catch (err) {
       console.error("Failed to add candidate:", err);
       if (err.message.includes("already exists")) {
-        alert("❌ Candidate '" + name + "' already exists!");
+        showStatus("Candidate '" + name + "' already exists", "error");
       } else if (err.message.includes("election starts")) {
-        alert("❌ Cannot add candidates after election has started!");
+        showStatus("Cannot add candidates after election has started", "error");
       } else {
-        alert("Failed to add candidate: " + err.message);
+        showStatus("Failed to add candidate", "error");
       }
     }
   };
@@ -194,14 +204,14 @@ function App() {
       const tx = await sendTx(contract.endElection.bind(contract));
       await tx.wait();
       setElectionActive(false);
-      loadVoteCounts(); // Final refresh to show results
-      alert("🛑 Election ended! Results are now visible.");
+      loadVoteCounts();
+      showStatus("Election ended — results are now visible");
     } catch (err) {
       console.error("Failed to end election:", err);
       if (err.message.includes("not active")) {
-        alert("❌ Election is not active — nothing to end!");
+        showStatus("Election is not active — nothing to end", "error");
       } else {
-        alert("Failed to end election: " + err.message);
+        showStatus("Failed to end election", "error");
       }
     }
   };
@@ -210,16 +220,16 @@ function App() {
   // REGISTER VOTER FUNCTION
   // ================================
   const registerVoter = async () => {
-    if (!voterAddress) return alert("Enter an address");
+    if (!voterAddress) return showStatus("Enter an address", "error");
     try {
       const contract = await getContract();
       const tx = await sendTx(contract.registerVoter.bind(contract), voterAddress.trim());
       await tx.wait();
-      alert("✅ Voter registered successfully!");
+      showStatus("Voter registered: " + truncateAddress(voterAddress.trim()));
       setVoterAddress("");
     } catch (err) {
       console.error("Failed to register voter:", err);
-      alert("Failed to register voter: " + err.message);
+      showStatus("Failed to register voter", "error");
     }
   };
 
@@ -231,13 +241,13 @@ function App() {
       const contract = await getContract();
       const votes = await contract.getVotes(candidateId);
       console.log("Votes:", votes.toString());
-      alert(`Candidate ${candidateId} has ${votes.toString()} votes`);
+      showStatus(`${displayCandidates[candidateId - 1] || "Candidate"} has ${votes.toString()} vote(s)`);
     } catch (err) {
       console.error("Failed to get votes:", err);
       if (err.message.includes("after election ends")) {
-        alert("🔒 Results are only available after the election ends!");
+        showStatus("Results are only available after the election ends", "error");
       } else {
-        alert("Failed to get votes: " + err.message);
+        showStatus("Failed to get votes", "error");
       }
     }
   };
@@ -247,11 +257,11 @@ function App() {
   // =============================
   const vote = async (candidateId) => {
     if (!account) {
-      alert("Please connect your wallet first.");
+      showStatus("Please connect your wallet first", "error");
       return;
     }
     if (hasVoted) {
-      alert("You have already voted!");
+      showStatus("You have already voted", "error");
       return;
     }
 
@@ -259,22 +269,22 @@ function App() {
       const contract = await getContract();
       const tx = await sendTx(contract.vote.bind(contract), candidateId);
       await tx.wait();
-      alert("✅ Vote recorded!");
+      showStatus("Vote recorded successfully");
       loadVoteCounts();
       setHasVoted(true);
     } catch (err) {
       console.error("Voting failed:", err);
       if (err.message.includes("already voted")) {
-        alert("You have already voted!");
+        showStatus("You have already voted", "error");
         setHasVoted(true);
       } else if (err.message.includes("Election is not active")) {
-        alert("❌ Election is not active!");
+        showStatus("Election is not active", "error");
       } else if (err.message.includes("not registered")) {
-        alert("❌ You are not registered to vote! Ask the admin to register you.");
+        showStatus("You are not registered to vote", "error");
       } else if (err.message.includes("Admin cannot vote")) {
-        alert("❌ Admin cannot vote!");
+        showStatus("Admin cannot vote", "error");
       } else {
-        alert("Failed to cast vote. See console for details.");
+        showStatus("Failed to cast vote", "error");
       }
     }
   };
@@ -289,6 +299,16 @@ function App() {
   // =============================
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 flex flex-col items-center p-6">
+
+      {statusMsg && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all ${
+          statusMsg.type === "error"
+            ? "bg-red-50 text-red-700 border border-red-200"
+            : "bg-green-50 text-green-700 border border-green-200"
+        }`}>
+          {statusMsg.message}
+        </div>
+      )}
 
       <header className="w-full max-w-4xl mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
@@ -353,6 +373,34 @@ function App() {
                 Add {name}
               </button>
             ))}
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <label className="text-sm font-medium text-gray-700 mb-2 block">Add Custom Candidate</label>
+            <div className="flex gap-2 max-w-lg">
+              <input
+                type="text"
+                placeholder="Candidate name"
+                value={newCandidateName}
+                onChange={(e) => setNewCandidateName(e.target.value)}
+                disabled={electionActive}
+                className="flex-1 px-3 py-2 rounded border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
+              />
+              <button
+                onClick={() => {
+                  if (!newCandidateName.trim()) return showStatus("Enter a candidate name", "error");
+                  addCandidate(newCandidateName.trim());
+                  setNewCandidateName("");
+                }}
+                disabled={electionActive}
+                className={`px-4 py-2 rounded text-sm font-medium transition ${electionActive
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                }`}
+              >
+                Add
+              </button>
+            </div>
           </div>
 
           <div className="mt-6 pt-5 border-t border-gray-200">
@@ -504,8 +552,8 @@ function App() {
               <div className="w-2 h-2 rounded-full bg-green-500"></div>
               <span className="text-sm text-green-700">Connected</span>
             </div>
-            <p className="text-xs break-all font-mono text-gray-500 mb-3">
-              {account}
+            <p className="text-sm font-mono text-gray-500 mb-3" title={account}>
+              {truncateAddress(account)}
             </p>
             {isAdmin && (
               <p className="text-sm font-medium text-amber-600 mb-2">Administrator</p>
