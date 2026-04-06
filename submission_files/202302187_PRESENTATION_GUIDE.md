@@ -186,6 +186,17 @@ export const sendTx = async (contractMethod, ...args) => {
 - When the admin wallet connects, the UI shows the **Admin Panel** (add candidates, register voters, start/end election).
 - When a voter wallet connects, the UI shows the **Voting Section** with candidate buttons.
 - The admin panel is physically hidden from voters — not just disabled, but not rendered at all.
+- **Candidate entry**: preset quick-add buttons for demo names, plus a **custom name** field so admins can add any candidate during the demo without redeploying.
+
+**Visual design:**
+- Light theme with indigo accent and bordered cards — readable on screen and on a projector.
+
+**Wallet display:**
+- Connected address is **truncated** in the header (e.g. `0x7099…cD78`); **hover** shows the full address for verification.
+
+**Non-blocking feedback:**
+- Success and errors use **inline toasts** (top-right, auto-dismiss) instead of blocking `alert()` so flows stay smooth while you present.
+- If MetaMask is missing, a simple alert still tells the user to install the extension.
 
 **Live Results Dashboard:**
 - Polls the blockchain every 10 seconds using `setInterval`.
@@ -205,7 +216,7 @@ window.ethereum.on("accountsChanged", handleAccountsChanged);
 - They can verify the total by looking at candidate vote counts.
 - No one knows who "Edward" voted for — but everyone can see that wallet `0x70997...` voted and the tally is correct.
 
-**What to say to markers**: "I designed the frontend to make the blockchain accessible. The role-based UI ensures admins and voters see only what's relevant to them. The live dashboard provides real-time transparency, and pseudonymous wallet addresses let voters verify their vote without revealing their identity."
+**What to say to markers**: "I designed the frontend to make the blockchain accessible: role-based panels, a light high-contrast layout, and smooth feedback with toasts instead of pop-up alerts. Admins can add preset or custom candidates; voters see a clean wallet display with full address on hover. The live dashboard gives real-time transparency, and pseudonymous addresses let voters verify their vote without revealing identity."
 
 ---
 
